@@ -3,6 +3,8 @@
 
 [![npm version](https://badge.fury.io/js/nice-toast-js.svg)](https://www.npmjs.com/package/nice-toast-js)
 
+![Nice Toast JS](screenshot.png)
+
 Requirements
 -----
   + [jQuery](http://jquery.com/)
