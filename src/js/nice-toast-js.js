@@ -62,16 +62,7 @@
    var defaults = {
        position: "top-center",
        timeout: 5000,
-       closeOnClick: true,
-       pauseOnFocusLoss: true,
-       pauseOnHover: true,
-       draggable: true,
-       draggablePercent: 0.6,
-       showCloseButtonOnHover: false,
-       hideProgressBar: true,
-       closeButton: "button",
-       icon: true,
-       rtl: false
+       progressBar: true
    };
 
    const icon_check     = '<svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="check-circle" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="svg-inline--fa fa-check-circle fa-w-16 nice-toast-icon"><path fill="currentColor" d="M504 256c0 136.967-111.033 248-248 248S8 392.967 8 256 119.033 8 256 8s248 111.033 248 248zM227.314 387.314l184-184c6.248-6.248 6.248-16.379 0-22.627l-22.627-22.627c-6.248-6.249-16.379-6.249-22.628 0L216 308.118l-70.059-70.059c-6.248-6.248-16.379-6.248-22.628 0l-22.627 22.627c-6.248 6.248-6.248 16.379 0 22.627l104 104c6.249 6.249 16.379 6.249 22.628.001z"></path></svg>';
@@ -89,25 +80,45 @@
 
          this._init()._render();
          this._event();
+         if (this.options.timeout){
+
+             this._timeout();
+         }
      }
      _event(){
+
+         const t = this;
          this.toast.bind('mousedown', function(e){
-             let moved;
+             let moved, t = $(this);
              $(this).bind('mousemove', function(e){
                  moved = e.pageX - this.offsetLeft;
-                 $(this).fadeTo('fast', 1);
-                 console.log(moved);
-                 console.log(this.offsetLeft);
              });
-
              $(this).bind('mouseup',function(){
                  $(this).unbind('mousemove')
              });
          });
+         $('.nice-toast-close', this.toast).on('click', function (e) {
+             t._close();
+         });
+     }
+
+     _close () {
+         const t = this;
+         t.toast.addClass('nice-toast-bounce-leave-active');
+         setTimeout(function () {
+             t.toast.remove();
+         }, 650)
+     }
+
+     _timeout() {
+         const t = this;
+         setTimeout(function () {
+             t._close();
+         }, this.options.timeout)
      }
      // Initial Method
      _init() {
-        let toast, icon, base = 'nice-toast';
+        let toast, icon,progress , base = 'nice-toast';
         switch (this.type) {
             case "default":
             case "info":
@@ -121,32 +132,48 @@
                 icon = icon_check;
                 break;
         }
+        if (this.options.timeout){
+            progress = $('<div />').addClass(base + '-progress').css({
+                'animation-duration' : parseInt(this.options.timeout) + 'ms',
+                'opacity' : '1'
+            })
+        }
          toast = $('<div />').addClass(base + ' ' + base + '-' + this.type).append(
              [
                  icon,
                  $('<div />').addClass(base + '-content').attr('role','alert').text(this.message),
-                 $('<button />').addClass(base +'-close').attr('aria-label','close').text(' × ')
+                 $('<button />').addClass(base +'-close').attr('aria-label','close').text(' × '),
+                 progress
              ]
          );
          this.toast = toast;
         return this;
      }
      _render() {
-         const target = $('.nice-toast-wrapper.' + this.options.position);
+         const target = $('.nice-toast-wrapper.' + this.options.position),
+                toasts = $('.nice-toast', target),
+                t = this;
         if (target.length){
-            target.append(this.toast)
+            toasts.addClass('nice-toast-bounce-move');
+            target.prepend(this.toast);
+            this.toast.addClass('nice-toast-bounce-enter-active');
+            setTimeout(function () {
+                t.toast.removeClass('nice-toast-bounce-enter-active');
+            }, 800)
         }
      }
 
 
    }
 
-    $.niceToast = function (message, options) {
+
+
+    $.niceToast = function (message, options, type = 'default') {
         if (options === undefined || typeof options === 'object') {
-            return  new NiceToastJs(message, options);
+            return  new NiceToastJs(message, options , type);
 
         } else if (typeof options === 'string' && options[0] !== '_' && options !== 'init') {
-            return  new NiceToastJs(message, null);
+            return  new NiceToastJs(message, null, type);
         }
     };
     $.niceToast.success = function (message, options) {
@@ -161,4 +188,16 @@
     $.niceToast.error = function (message, options) {
         return $.niceToast(message, options, 'error');
     };
+    $.niceToast.setup = function (options) {
+        defaults = $.extend(true, {}, defaults, options);
+    };
+    $.niceToast.clear = function () {
+        const t = $('.nice-toast-wrapper .nice-toast');
+        t.addClass('nice-toast-bounce-leave-active');
+        setTimeout(function () {
+            t.remove();
+        }, 650)
+    };
 }));
+
+

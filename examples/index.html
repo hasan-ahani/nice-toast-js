@@ -27,10 +27,14 @@
 
     <script type="text/javascript">
         $(document).ready(function(){
+            $.niceToast.setup({
+                position: "top-center",
+                timeout: false,
+            });
 
             $('button').click(function (e) {
 
-                $.niceToast.success("I'm a toast!");
+                $.niceToast.error("I'm a toast!");
             });
             // Call Plugin
 		});

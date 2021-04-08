@@ -50,16 +50,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
   var defaults = {
     position: "top-center",
     timeout: 5000,
-    closeOnClick: true,
-    pauseOnFocusLoss: true,
-    pauseOnHover: true,
-    draggable: true,
-    draggablePercent: 0.6,
-    showCloseButtonOnHover: false,
-    hideProgressBar: true,
-    closeButton: "button",
-    icon: true,
-    rtl: false
+    progressBar: true
   };
   var icon_check = '<svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="check-circle" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="svg-inline--fa fa-check-circle fa-w-16 nice-toast-icon"><path fill="currentColor" d="M504 256c0 136.967-111.033 248-248 248S8 392.967 8 256 119.033 8 256 8s248 111.033 248 248zM227.314 387.314l184-184c6.248-6.248 6.248-16.379 0-22.627l-22.627-22.627c-6.248-6.249-16.379-6.249-22.628 0L216 308.118l-70.059-70.059c-6.248-6.248-16.379-6.248-22.628 0l-22.627 22.627c-6.248 6.248-6.248 16.379 0 22.627l104 104c6.249 6.249 16.379 6.249 22.628.001z"></path></svg>';
   var icon_info = '<svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="info-circle" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="svg-inline--fa fa-info-circle fa-w-16 nice-toast-icon"><path fill="currentColor" d="M256 8C119.043 8 8 119.083 8 256c0 136.997 111.043 248 248 248s248-111.003 248-248C504 119.083 392.957 8 256 8zm0 110c23.196 0 42 18.804 42 42s-18.804 42-42 42-42-18.804-42-42 18.804-42 42-42zm56 254c0 6.627-5.373 12-12 12h-88c-6.627 0-12-5.373-12-12v-24c0-6.627 5.373-12 12-12h12v-64h-12c-6.627 0-12-5.373-12-12v-24c0-6.627 5.373-12 12-12h64c6.627 0 12 5.373 12 12v100h12c6.627 0 12 5.373 12 12v24z"></path></svg>';
@@ -80,23 +71,46 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       this._init()._render();
 
       this._event();
+
+      if (this.options.timeout) {
+        this._timeout();
+      }
     }
 
     _createClass(NiceToastJs, [{
       key: "_event",
       value: function _event() {
+        var t = this;
         this.toast.bind('mousedown', function (e) {
-          var moved;
+          var moved,
+              t = $(this);
           $(this).bind('mousemove', function (e) {
             moved = e.pageX - this.offsetLeft;
-            $(this).fadeTo('fast', 1);
-            console.log(moved);
-            console.log(this.offsetLeft);
           });
           $(this).bind('mouseup', function () {
             $(this).unbind('mousemove');
           });
         });
+        $('.nice-toast-close', this.toast).on('click', function (e) {
+          t._close();
+        });
+      }
+    }, {
+      key: "_close",
+      value: function _close() {
+        var t = this;
+        t.toast.addClass('nice-toast-bounce-leave-active');
+        setTimeout(function () {
+          t.toast.remove();
+        }, 650);
+      }
+    }, {
+      key: "_timeout",
+      value: function _timeout() {
+        var t = this;
+        setTimeout(function () {
+          t._close();
+        }, this.options.timeout);
       } // Initial Method
 
     }, {
@@ -104,6 +118,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       value: function _init() {
         var toast,
             icon,
+            progress,
             base = 'nice-toast';
 
         switch (this.type) {
@@ -122,17 +137,31 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
             break;
         }
 
-        toast = $('<div />').addClass(base + ' ' + base + '-' + this.type).append([icon, $('<div />').addClass(base + '-content').attr('role', 'alert').text(this.message), $('<button />').addClass(base + '-close').attr('aria-label', 'close').text(' × ')]);
+        if (this.options.timeout) {
+          progress = $('<div />').addClass(base + '-progress').css({
+            'animation-duration': parseInt(this.options.timeout) + 'ms',
+            'opacity': '1'
+          });
+        }
+
+        toast = $('<div />').addClass(base + ' ' + base + '-' + this.type).append([icon, $('<div />').addClass(base + '-content').attr('role', 'alert').text(this.message), $('<button />').addClass(base + '-close').attr('aria-label', 'close').text(' × '), progress]);
         this.toast = toast;
         return this;
       }
     }, {
       key: "_render",
       value: function _render() {
-        var target = $('.nice-toast-wrapper.' + this.options.position);
+        var target = $('.nice-toast-wrapper.' + this.options.position),
+            toasts = $('.nice-toast', target),
+            t = this;
 
         if (target.length) {
-          target.append(this.toast);
+          toasts.addClass('nice-toast-bounce-move');
+          target.prepend(this.toast);
+          this.toast.addClass('nice-toast-bounce-enter-active');
+          setTimeout(function () {
+            t.toast.removeClass('nice-toast-bounce-enter-active');
+          }, 800);
         }
       }
     }]);
@@ -141,10 +170,12 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
   }();
 
   $.niceToast = function (message, options) {
+    var type = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'default';
+
     if (options === undefined || _typeof(options) === 'object') {
-      return new NiceToastJs(message, options);
+      return new NiceToastJs(message, options, type);
     } else if (typeof options === 'string' && options[0] !== '_' && options !== 'init') {
-      return new NiceToastJs(message, null);
+      return new NiceToastJs(message, null, type);
     }
   };
 
@@ -162,5 +193,17 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
   $.niceToast.error = function (message, options) {
     return $.niceToast(message, options, 'error');
+  };
+
+  $.niceToast.setup = function (options) {
+    defaults = $.extend(true, {}, defaults, options);
+  };
+
+  $.niceToast.clear = function () {
+    var t = $('.nice-toast-wrapper .nice-toast');
+    t.addClass('nice-toast-bounce-leave-active');
+    setTimeout(function () {
+      t.remove();
+    }, 650);
   };
 });
