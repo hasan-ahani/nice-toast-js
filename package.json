@@ -1,10 +1,11 @@
 {
   "name": "nice-toast-js",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "jquery easy & nice Toast",
   "homepage": "https://github.com/hasan-ahani/nice-toast-js",
   "license": "MIT",
   "author": "hasan ahani <hasanahani.ir@gmail.com>",
+  "main": "./dist/js/nice-toast-js.min.js",
   "repository": "https://github.com/hasan-ahani/nice-toast-js",
   "dependencies": {
     "gulp-sass": "^4.1.0",
