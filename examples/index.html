@@ -29,12 +29,12 @@
         $(document).ready(function(){
             $.niceToast.setup({
                 position: "top-center",
-                timeout: 5000,
+                timeout: 15000,
             });
 
             $('button').click(function (e) {
 
-                $.niceToast.error("I'm a toast!");
+                let toast = $.niceToast.error('<strong>Error</strong>: The password you entered for the username');
             });
             // Call Plugin
 		});
