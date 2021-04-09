@@ -73,14 +73,30 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       this._event();
 
       if (this.options.timeout) {
-        this._timeout();
+        this._timeout(this.options.timeout);
       }
+
+      return this;
     }
 
     _createClass(NiceToastJs, [{
+      key: "change",
+      value: function change(content, delay) {
+        var t = this;
+
+        if (delay !== undefined && delay !== null) {
+          setTimeout(function () {
+            $('.nice-toast-content', t.toast).html(content);
+          }, delay);
+        } else {
+          $('.nice-toast-content', t.toast).html(content);
+        }
+      }
+    }, {
       key: "_event",
       value: function _event() {
-        var t = this;
+        var t = this,
+            p = $('.nice-toast-progress', this.toast);
         this.toast.bind('mousedown', function (e) {
           var moved,
               t = $(this);
@@ -93,7 +109,13 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         });
         $('.nice-toast-close', this.toast).on('click', function (e) {
           t._close();
-        });
+        }); // this.toast.mouseover(function () {
+        //     p.css('animation-play-state', 'paused');
+        //     clearTimeout(t.timeout)
+        // }).mouseleave(function () {
+        //     p.css('animation-play-state', 'running');
+        //     t._timeout(t._getTimeLeft());
+        // })
       }
     }, {
       key: "_close",
@@ -105,12 +127,18 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         }, 650);
       }
     }, {
+      key: "_getTimeLeft",
+      value: function _getTimeLeft() {
+        return this.options.timeout - (performance.now() - this.timeLeft);
+      }
+    }, {
       key: "_timeout",
-      value: function _timeout() {
+      value: function _timeout(delay) {
         var t = this;
-        setTimeout(function () {
+        this.timeLeft = performance.now();
+        t.timeout = setTimeout(function () {
           t._close();
-        }, this.options.timeout);
+        }, delay);
       } // Initial Method
 
     }, {
@@ -144,7 +172,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           });
         }
 
-        toast = $('<div />').addClass(base + ' ' + base + '-' + this.type).append([icon, $('<div />').addClass(base + '-content').attr('role', 'alert').text(this.message), $('<button />').addClass(base + '-close').attr('aria-label', 'close').text(' × '), progress]);
+        toast = $('<div />').addClass(base + ' ' + base + '-' + this.type).append([icon, $('<div />').addClass(base + '-content').attr('role', 'alert').html(this.message), $('<button />').addClass(base + '-close').attr('aria-label', 'close').text(' × '), progress]);
         this.toast = toast;
         return this;
       }
