@@ -35,6 +35,9 @@
             $('button').click(function (e) {
 
                 let toast = $.niceToast.error('<strong>Error</strong>: The password you entered for the username');
+
+                    toast.change('redirecting ...' ,2000)
+
             });
             // Call Plugin
 		});
