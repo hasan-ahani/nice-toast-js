@@ -85,6 +85,14 @@
          }
          return this;
      }
+     change(content, delay){
+         let t = this;
+         if (delay !== undefined && delay !== null){
+             setTimeout(function () {
+                 $('.nice-toast-content', t.toast).html(content);
+             },delay);
+         }else{
+             $('.nice-toast-content', t.toast).html(content);
          }
      }
      _event(){
